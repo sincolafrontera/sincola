@@ -854,14 +854,15 @@ function toast(title,sub){
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
 <script>
-  // CONFIGURACIÓN FIREBASE 
+  // CONFIG FIREBASE
   const firebaseConfig = {
     apiKey: "AIzaSyBfpxXRX-8EGUypXWZALCZI6ntvloe849A",
     authDomain: "sincola-3cf36.firebaseapp.com",
     projectId: "sincola-3cf36",
     storageBucket: "sincola-3cf36.appspot.com",
     messagingSenderId: "1058044123494",
-    appId: "1:1058044123494:web:f5c45982cd174f422790a7"
+    appId: "1:1058044123494:web:f5c45982cd174f422790a7",
+    measurementId: "G-6L0PZ8T89Z"
   };
 
   // INICIALIZAR FIREBASE
@@ -870,20 +871,27 @@ function toast(title,sub){
   // PROVIDER GOOGLE
   const provider = new firebase.auth.GoogleAuthProvider();
 
-  // FUNCIÓN LOGIN
+  // LOGIN CON REDIRECT
   function login() {
     firebase.auth().signInWithRedirect(provider);
-       .then((result) => {
+  }
+
+  // CUANDO VUELVE DE GOOGLE
+  firebase.auth().getRedirectResult()
+    .then((result) => {
+      if (result.user) {
         console.log("Usuario:", result.user);
         alert("Bienvenido " + result.user.displayName);
-      })
-      .catch((error) => {
-        console.log(error);
-        alert("Error en login Google");
-      });
-  }
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+      alert("Error login Google");
+    });
 </script>
-  <button onclick="login()">Login con Google</button>
   
+<button onclick="login()">Login con Google</button>
+  
+</script> 
 </body>
 </html>
