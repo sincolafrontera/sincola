@@ -849,5 +849,20 @@ function toast(title,sub){
   setTimeout(()=>t.classList.remove('show'),3500);
 }
 </script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 </body>
 </html>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBfpxXRX-8EGUypXWZALCZI6ntvloe849A",
+    authDomain: "sincola-3cf36.firebaseapp.com",
+    projectId: "sincola-3cf36",
+    storageBucket: "sincola-3cf36.firebasestorage.app",
+    messagingSenderId: "1058044123494",
+    appId: "1:1058044123494:web:f5c45982cd174f422790a7",
+    measurementId: "G-6L0PZ8T89Z"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+</script>
