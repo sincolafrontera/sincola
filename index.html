@@ -849,5 +849,42 @@ function toast(title,sub){
   setTimeout(()=>t.classList.remove('show'),3500);
 }
 </script>
+  <!-- FIREBASE LOGIN GOOGLE -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
+<script>
+  // CONFIGURACIÓN FIREBASE (la tuya)
+  const firebaseConfig = {
+    apiKey: "AIzaSyBfpxXRX-8EGUypXWZALCZI6ntvloe849A",
+    authDomain: "sincola-3cf36.firebaseapp.com",
+    projectId: "sincola-3cf36",
+    storageBucket: "sincola-3cf36.appspot.com",
+    messagingSenderId: "1058044123494",
+    appId: "1:1058044123494:web:f5c45982cd174f422790a7"
+  };
+
+  // INICIALIZAR FIREBASE
+  firebase.initializeApp(firebaseConfig);
+
+  // PROVIDER GOOGLE
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  // FUNCIÓN LOGIN
+  function login() {
+    firebase.auth().signInWithPopup(provider)
+      .then((result) => {
+        console.log("Usuario:", result.user);
+        alert("Bienvenido " + result.user.displayName);
+      })
+      .catch((error) => {
+        console.log(error);
+        alert("Error en login Google");
+      });
+  }
+</script>
+  <button onclick="login()">Login con Google</button>
+  
 </body>
 </html>
+<button onclick="login()">Login con Google</button>
