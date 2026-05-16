@@ -854,7 +854,7 @@ function toast(title,sub){
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
 <script>
-  // CONFIGURACIÓN FIREBASE (la tuya)
+  // CONFIGURACIÓN FIREBASE 
   const firebaseConfig = {
     apiKey: "AIzaSyBfpxXRX-8EGUypXWZALCZI6ntvloe849A",
     authDomain: "sincola-3cf36.firebaseapp.com",
@@ -872,7 +872,7 @@ function toast(title,sub){
 
   // FUNCIÓN LOGIN
   function login() {
-    firebase.auth().signInWithPopup(provider)
+    firebase.auth().signInWithRedirect(provider);
       .then((result) => {
         console.log("Usuario:", result.user);
         alert("Bienvenido " + result.user.displayName);
