@@ -849,48 +849,40 @@ function toast(title,sub){
   setTimeout(()=>t.classList.remove('show'),3500);
 }
 </script>
-  <!-- FIREBASE LOGIN GOOGLE -->
+  <button onclick="loginGoogle()">
+  Login con Google
+</button>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
 <script>
-  // CONFIG FIREBASE
-  const firebaseConfig = {
-    apiKey: "AIzaSyBfpxXRX-8EGUypXWZALCZI6ntvloe849A",
-    authDomain: "sincola-3cf36.firebaseapp.com",
-    projectId: "sincola-3cf36",
-    storageBucket: "sincola-3cf36.appspot.com",
-    messagingSenderId: "1058044123494",
-    appId: "1:1058044123494:web:f5c45982cd174f422790a7",
-    measurementId: "G-6L0PZ8T89Z"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyBfpxXRX-8EGUypXWZALCZI6ntvloe849A",
+  authDomain: "sincola-3cf36.firebaseapp.com",
+  projectId: "sincola-3cf36",
+  storageBucket: "sincola-3cf36.appspot.com",
+  messagingSenderId: "1058044123494",
+  appId: "1:1058044123494:web:f5c45982cd174f422790a7",
+  measurementId: "G-6L0PZ8T89Z"
+};
 
-  // INICIALIZAR FIREBASE
-  firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
 
-  // PROVIDER GOOGLE
-  const provider = new firebase.auth.GoogleAuthProvider();
+const provider = new firebase.auth.GoogleAuthProvider();
 
-  // LOGIN CON REDIRECT
-  function login() {
-    firebase.auth().signInWithRedirect(provider);
+function loginGoogle() {
+  firebase.auth().signInWithRedirect(provider);
+}
+
+firebase.auth().onAuthStateChanged((user) => {
+  if (user) {
+    alert("Bienvenido " + user.displayName);
+    console.log(user);
   }
-
-  // CUANDO VUELVE DE GOOGLE
-  firebase.auth().getRedirectResult()
-    .then((result) => {
-      if (result.user) {
-        console.log("Usuario:", result.user);
-        alert("Bienvenido " + result.user.displayName);
-      }
-    })
-    .catch((error) => {
-      console.log(error);
-      alert("Error login Google");
-    });
+});
 </script>
   
-<button onclick="login()">Login con Google</button>
-  
+</script>
 </body>
 </html>
