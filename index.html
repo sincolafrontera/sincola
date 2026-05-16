@@ -854,6 +854,21 @@ function toast(title,sub){
 </body>
 </html>
 <script>
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  function login() {
+    firebase.auth().signInWithPopup(provider)
+      .then((result) => {
+        console.log(result.user);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+</script>
+
+<button onclick="login()">Login con Google</button>
+<script>
   const firebaseConfig = {
     apiKey: "AIzaSyBfpxXRX-8EGUypXWZALCZI6ntvloe849A",
     authDomain: "sincola-3cf36.firebaseapp.com",
