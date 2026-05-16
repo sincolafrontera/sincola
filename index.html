@@ -253,19 +253,106 @@ footer{border-top:1px solid var(--border);padding:32px 40px;max-width:1200px;mar
 #feedReal .feed-item{animation:fadeUp .3s ease both;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+/* ── MOBILE NAV MENU ── */
+.mobile-menu-btn{display:none;background:transparent;border:1px solid var(--border);color:var(--muted);width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:1.1rem;align-items:center;justify-content:center;flex-shrink:0;}
+.mobile-nav{display:none;position:fixed;inset:0;background:rgba(10,12,16,.98);z-index:999;flex-direction:column;padding:24px 20px;gap:0;}
+.mobile-nav.open{display:flex;}
+.mobile-nav-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;}
+.mobile-nav-close{background:transparent;border:none;color:var(--muted);font-size:1.5rem;cursor:pointer;}
+.mobile-nav a{display:block;font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:700;color:var(--text);padding:14px 0;border-bottom:1px solid var(--border);text-decoration:none;cursor:pointer;transition:color .2s;}
+.mobile-nav a:hover{color:var(--accent);}
+.mobile-nav-btns{margin-top:32px;display:flex;flex-direction:column;gap:12px;}
+
 @media(max-width:768px){
+  /* NAV */
   nav{padding:12px 16px;}
   .nav-links{display:none;}
-  .hero{height:360px;}
-  .hero-body{padding:0 20px 36px;}
-  .grid{padding:20px 16px 60px;grid-template-columns:1fr;}
+  .mobile-menu-btn{display:flex;}
+  .btn-report{font-size:.58rem;padding:7px 12px;}
+  .btn-login{display:none;}
+
+  /* HERO */
+  .hero{height:320px;}
+  .hero-body{padding:0 16px 28px;}
+  .hero-body h1{font-size:2.4rem;}
+  .hero-body p{font-size:.85rem;}
+  .live-pill{font-size:.65rem;padding:4px 10px;}
+  .slide-dots{right:16px;bottom:14px;}
+
+  /* GRID */
+  .grid{padding:16px 14px 60px;grid-template-columns:1fr;gap:14px;}
+  .card{padding:20px 16px;}
   .card.full{grid-column:1;}
-  .charts-grid{grid-template-columns:1fr;}
+
+  /* STATUS CARDS */
+  .dir-title{font-size:1rem;}
+  .scircle{width:44px;height:44px;font-size:1.1rem;}
+  .slabel{font-size:1.2rem;}
+  .segs{gap:6px;}
+  .seg{padding:10px 6px;}
+  .seg-icon{font-size:.95rem;}
+  .seg-name{font-size:.55rem;}
+  .seg-val{font-size:.7rem;}
+
+  /* CHARTS */
+  .charts-grid{grid-template-columns:1fr;gap:12px;}
+  .chart-box{padding:14px;}
+  .peak-d{padding:10px 12px;}
+
+  /* RANKING */
+  .rank-row{padding:8px 10px;gap:8px;}
+  .rav{width:28px;height:28px;font-size:.8rem;}
+  .rname{font-size:.78rem;}
+  .rpts{font-size:.72rem;}
+
+  /* FEED */
+  .feed-item{gap:10px;padding:11px 0;}
+  .fav{width:30px;height:30px;font-size:.75rem;}
+  .fuser{font-size:.78rem;}
+  .fmsg{font-size:.74rem;}
+  .ftime{font-size:.62rem;}
+
+  /* BEST TIME */
+  .bt-box{flex-direction:column;align-items:flex-start;gap:12px;}
+  .bt-clock{width:100%;text-align:center;padding:12px;}
+  .bt-clock .t{font-size:2rem;}
+
+  /* MODAL */
+  .modal{padding:22px 18px;border-radius:18px;max-height:85vh;}
+  .mtitle{font-size:1.15rem;}
+  .sel-btn{font-size:.76rem;padding:9px 6px;}
+
+  /* COOKIE */
+  .cookie-banner{flex-direction:column;padding:16px;gap:12px;}
+  .cookie-text{font-size:.76rem;}
+  .cookie-buttons{width:100%;justify-content:space-between;}
+  .ck-btn{flex:1;text-align:center;padding:8px 6px;font-size:.72rem;}
+
+  /* FOOTER */
   footer{padding:24px 16px;}
-  .ft-top{flex-direction:column;}
-  .cookie-banner{padding:16px 20px;}
-  .contact-wrap{padding:0 16px 60px;margin-top:32px;}
-  .cinfo{grid-template-columns:1fr;}
+  .ft-top{flex-direction:column;gap:20px;}
+  .ft-links{gap:20px;}
+  .ft-col h4{font-size:.68rem;}
+  .ft-col a{font-size:.74rem;margin-bottom:6px;}
+  .ft-bottom{flex-direction:column;text-align:center;gap:6px;}
+
+  /* CONTACT */
+  .contact-wrap{padding:0 14px 60px;margin-top:24px;}
+  .contact-wrap h2{font-size:2.2rem;}
+  .cform{padding:20px 16px;}
+  .finput{padding:11px 13px;font-size:.88rem;}
+  .cinfo{grid-template-columns:1fr;gap:10px;}
+  .cinfobox{padding:14px;}
+
+  /* REPORT MODAL selectors */
+  #reportModal .modal{max-height:88vh;}
+}
+
+@media(max-width:400px){
+  .hero-body h1{font-size:2rem;}
+  .btn-report{font-size:.55rem;padding:7px 10px;}
+  .segs{grid-template-columns:1fr 1fr 1fr;}
+  .seg-name{display:none;}
 }
 </style>
 </head>
@@ -297,8 +384,29 @@ footer{border-top:1px solid var(--border);padding:32px 40px;max-width:1200px;mar
     <button class="btn-theme" id="themeBtn" onclick="toggleTheme()">🌙</button>
     <button class="btn-report" onclick="openReport()"><span>🚦 Reportar ahora</span></button>
     <button class="btn-login" id="loginNavBtn" onclick="openLogin()">Iniciar sesion · Registrar</button>
+    <button class="mobile-menu-btn" onclick="openMobileMenu()">☰</button>
   </div>
 </nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-nav" id="mobileNav">
+  <div class="mobile-nav-header">
+    <div class="logo">
+      <img src="https://res.cloudinary.com/dxfgrz6it/image/upload/f_auto,q_auto/SinCola.app_h8owfv" alt="SinCola" onerror="this.style.display='none'" style="width:32px;height:32px;border-radius:8px;">
+      <span class="logo-text">SinCola</span>
+    </div>
+    <button class="mobile-nav-close" onclick="closeMobileMenu()">✕</button>
+  </div>
+  <a onclick="closeMobileMenu();showPage('home')">Estado actual</a>
+  <a onclick="closeMobileMenu();document.getElementById('historico').scrollIntoView()">Historico</a>
+  <a onclick="closeMobileMenu();document.getElementById('ranking').scrollIntoView()">Ranking</a>
+  <a onclick="closeMobileMenu();document.getElementById('como-funciona').scrollIntoView()">Como funciona</a>
+  <a onclick="closeMobileMenu();showPage('contact')">Contacto</a>
+  <div class="mobile-nav-btns">
+    <button class="btn-report" style="width:100%;padding:14px;font-size:.75rem;" onclick="closeMobileMenu();openReport()"><span>🚦 Reportar ahora</span></button>
+    <button class="btn-login" style="width:100%;padding:12px;font-size:.65rem;" onclick="closeMobileMenu();openLogin()">Iniciar sesion · Registrar</button>
+  </div>
+</div>
 
 <div class="page active" id="homePage">
   <div class="hero">
@@ -576,6 +684,16 @@ footer{border-top:1px solid var(--border);padding:32px 40px;max-width:1200px;mar
 </div>
 
 <script>
+// ── MOBILE MENU ──
+function openMobileMenu(){
+  document.getElementById('mobileNav').classList.add('open');
+  document.body.classList.add('locked');
+}
+function closeMobileMenu(){
+  document.getElementById('mobileNav').classList.remove('open');
+  document.body.classList.remove('locked');
+}
+
 // ── PAGES ──
 function showPage(p){
   document.getElementById('homePage').classList.toggle('active', p==='home');
