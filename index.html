@@ -6,15 +6,35 @@
 <title>SinCola — Estado en tiempo real de la frontera del Tarajal</title>
 <meta name="description" content="Consulta el estado de las colas en la frontera del Tarajal en tiempo real.">
 <meta name="robots" content="index, follow">
-<link rel="canonical" href="https://sincola.es">
+<link rel="canonical" href="https://sincolafrontera.github.io/sincola/">
 <meta property="og:title" content="SinCola — Estado en tiempo real de la frontera del Tarajal">
 <meta property="og:description" content="Consulta y reporta el estado de las colas en la frontera del Tarajal.">
-<meta property="og:url" content="https://sincola.es">
+<meta property="og:url" content="https://sincolafrontera.github.io/sincola/">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23f97316'/><text y='78' font-size='75' font-family='Arial' font-weight='bold' fill='white' x='18'>S</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Orbitron:wght@700;900&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBfpxXRX-8EGUypXWZALCZI6ntvloe849A",
+    authDomain: "sincola-3cf36.firebaseapp.com",
+    projectId: "sincola-3cf36",
+    storageBucket: "sincola-3cf36.appspot.com",
+    messagingSenderId: "1058044123494",
+    appId: "1:1058044123494:web:f5c45982cd174f422790a7"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  const googleProvider = new firebase.auth.GoogleAuthProvider();
+</script>
+
 <style>
 :root{
   --bg:#0a0c10;--surface:#111318;--border:#1e2229;
@@ -28,8 +48,6 @@
 html{scroll-behavior:smooth;}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;transition:background .3s,color .3s;}
 body.locked{overflow:hidden;}
-
-/* ── NAV ── */
 nav{display:flex;align-items:center;justify-content:space-between;padding:14px 40px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(10,12,16,.95);backdrop-filter:blur(20px);z-index:100;gap:16px;transition:background .3s;}
 [data-theme="light"] nav{background:rgba(241,243,247,.95);}
 .logo{display:flex;align-items:center;gap:10px;flex-shrink:0;cursor:pointer;}
@@ -46,8 +64,6 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:14px 4
 .btn-theme{background:transparent;border:1px solid var(--border);color:var(--muted);width:34px;height:34px;border-radius:8px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .2s;}
 .btn-theme:hover{border-color:var(--accent);color:var(--accent);}
 .btn-login{background:rgba(249,115,22,.15);color:#fff;border:2px solid #f97316;padding:7px 14px;border-radius:8px;font-family:'Orbitron',sans-serif;font-size:.6rem;font-weight:700;cursor:pointer;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;outline:2px solid rgba(249,115,22,.35);outline-offset:3px;transition:all .2s;}
-
-/* ── COOKIE ── */
 .cookie-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:490;display:none;}
 .cookie-overlay.show{display:block;}
 .cookie-banner{position:fixed;bottom:0;left:0;right:0;background:#1a1d25;border-top:2px solid var(--accent);padding:20px 40px;z-index:510;display:flex;align-items:center;gap:20px;flex-wrap:wrap;transform:translateY(100%);transition:transform .4s;}
@@ -58,12 +74,8 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:14px 4
 .ck-btn{padding:9px 18px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .2s;white-space:nowrap;}
 .ck-btn:hover{border-color:var(--muted);color:var(--text);}
 .ck-btn.accept{background:var(--accent);border-color:var(--accent);color:#fff;}
-
-/* ── PAGES ── */
 .page{display:none;}
 .page.active{display:block;}
-
-/* ── HERO ── */
 .hero{position:relative;height:480px;overflow:hidden;}
 .slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 1.4s ease-in-out;}
 .slide.active{opacity:1;}
@@ -81,8 +93,6 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:14px 4
 .slide-dots{position:absolute;bottom:20px;right:40px;display:flex;gap:6px;z-index:3;}
 .dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:all .3s;}
 .dot.active{background:var(--accent);width:20px;border-radius:3px;}
-
-/* ── GRID ── */
 .grid{max-width:1200px;margin:0 auto;padding:32px 40px 80px;display:grid;grid-template-columns:1fr 1fr;gap:20px;}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;position:relative;overflow:hidden;transition:border-color .3s,transform .2s;animation:fadeUp .5s ease both;}
 .card:hover{border-color:#2e3340;transform:translateY(-2px);}
@@ -91,8 +101,6 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:14px 4
 .glow.g{background:var(--green);}.glow.y{background:var(--yellow);}.glow.r{background:var(--red);}.glow.b{background:var(--blue);}
 .clabel{font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
 .clabel::before{content:'';display:inline-block;width:20px;height:1px;background:var(--border);}
-
-/* status cards */
 .dir-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;margin-bottom:18px;}
 .srow{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
 .scircle{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
@@ -114,8 +122,6 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:14px 4
 .seg-val.g{color:var(--green);}.seg-val.y{color:var(--yellow);}.seg-val.r{color:var(--red);}
 .rep-btn{width:100%;margin-top:18px;padding:11px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.83rem;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;}
 .rep-btn:hover{background:rgba(249,115,22,.1);border-color:rgba(249,115,22,.4);color:var(--accent);}
-
-/* best time */
 .bt-box{display:flex;align-items:center;gap:16px;margin-bottom:20px;}
 .bt-clock{background:rgba(34,197,94,.12);border:2px solid rgba(34,197,94,.35);border-radius:16px;padding:14px 18px;text-align:center;flex-shrink:0;}
 .bt-clock .t{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--green);line-height:1;}
@@ -131,8 +137,6 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:14px 4
 .li{display:flex;align-items:center;gap:5px;font-size:.68rem;color:var(--muted);}
 .ld{width:10px;height:10px;border-radius:2px;}
 .ad-ph{background:repeating-linear-gradient(45deg,rgba(255,255,255,.01),rgba(255,255,255,.01) 10px,transparent 10px,transparent 20px);border:1px dashed var(--border);border-radius:14px;padding:18px;text-align:center;color:var(--muted);font-size:.75rem;display:flex;align-items:center;justify-content:center;gap:8px;min-height:70px;}
-
-/* charts */
 .charts-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
 .chart-box{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:14px;padding:18px;}
 .chart-title{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;margin-bottom:4px;}
@@ -150,8 +154,6 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:14px 4
 .peak-val{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:var(--muted);flex:1;}
 .peak-hora{font-size:.7rem;color:var(--muted);white-space:nowrap;background:rgba(255,255,255,.05);padding:3px 8px;border-radius:6px;}
 .peak-d.on .peak-hora{color:var(--accent);background:rgba(249,115,22,.1);}
-
-/* ranking */
 .rank-list{display:flex;flex-direction:column;gap:10px;margin-top:4px;}
 .rank-row{display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;}
 .rn{font-family:'Syne',sans-serif;font-size:.75rem;font-weight:700;color:var(--muted);width:20px;text-align:center;}
@@ -159,8 +161,6 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:14px 4
 .rav{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;}
 .rname{flex:1;font-size:.83rem;font-weight:500;}
 .rpts{font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;color:var(--accent);}
-
-/* feed */
 .feed-list{display:flex;flex-direction:column;}
 .feed-item{display:flex;gap:14px;padding:13px 0;border-bottom:1px solid var(--border);}
 .feed-item:last-child{border-bottom:none;}
@@ -174,8 +174,6 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:14px 4
 .ftag.r{background:rgba(239,68,68,.15);color:var(--red);}
 .ftime{font-size:.68rem;color:var(--muted);margin-top:4px;}
 .fpts{font-family:'Syne',sans-serif;font-size:.7rem;font-weight:700;color:var(--accent);white-space:nowrap;margin-top:4px;}
-
-/* ── CONTACT PAGE ── */
 .contact-wrap{max-width:700px;margin:60px auto;padding:0 40px 80px;}
 .contact-wrap h2{font-family:'Bebas Neue',sans-serif;font-size:3rem;margin-bottom:8px;letter-spacing:.04em;}
 .contact-wrap h2 span{background:linear-gradient(135deg,var(--accent),#f43f5e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
@@ -197,8 +195,6 @@ textarea.finput{resize:vertical;min-height:140px;}
 .cinfobox .ico{font-size:1.4rem;flex-shrink:0;}
 .cinfobox .lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:3px;}
 .cinfobox .val{font-size:.85rem;font-weight:600;}
-
-/* ── MODALS ── */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
 .overlay.on{opacity:1;pointer-events:all;}
 #legalModal{z-index:520;}
@@ -210,14 +206,10 @@ textarea.finput{resize:vertical;min-height:140px;}
 .mlbl{font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
 .closex{float:right;background:transparent;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;margin-top:-4px;}
 .closex:hover{color:var(--text);}
-
-/* report modal banner */
 .rep-banner{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:20px;font-size:.82rem;}
 .rep-banner .name{font-weight:600;color:var(--muted);}
 .rep-banner .name.logged{color:var(--green);}
 .rep-banner .enter-link{font-size:.72rem;color:var(--accent);text-decoration:underline;cursor:pointer;white-space:nowrap;}
-
-/* sel buttons */
 .sel-btn{flex:1;min-width:80px;padding:10px 8px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;transition:all .15s;text-align:center;}
 .sel-btn:hover,.sel-btn.on{border-color:var(--accent);color:var(--accent);background:rgba(249,115,22,.08);}
 .sel-btn.sg.on{border-color:var(--green);color:var(--green);background:rgba(34,197,94,.08);}
@@ -225,8 +217,6 @@ textarea.finput{resize:vertical;min-height:140px;}
 .sel-btn.sr.on{border-color:var(--red);color:var(--red);background:rgba(239,68,68,.08);}
 .submit-btn{width:100%;padding:14px;border-radius:12px;border:none;background:var(--accent);color:#fff;font-family:'Orbitron',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;margin-top:8px;transition:opacity .2s;}
 .submit-btn:hover{opacity:.85;}
-
-/* login modal */
 .ltabs{display:flex;margin-bottom:20px;background:rgba(255,255,255,.04);border-radius:10px;padding:3px;}
 .ltab{flex:1;padding:9px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;cursor:pointer;border-radius:8px;transition:all .2s;}
 .ltab.on{background:var(--surface);color:var(--text);font-weight:600;}
@@ -246,12 +236,8 @@ textarea.finput{resize:vertical;min-height:140px;}
 .check-row{display:flex;align-items:flex-start;gap:10px;margin:12px 0;font-size:.78rem;color:var(--muted);line-height:1.5;}
 .check-row input{width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;margin-top:2px;cursor:pointer;}
 .check-row a{color:var(--accent);cursor:pointer;}
-
-/* ── TOAST ── */
 .toast{position:fixed;bottom:30px;right:30px;background:var(--surface);border:1px solid rgba(249,115,22,.5);border-radius:14px;padding:14px 20px;display:flex;align-items:center;gap:12px;font-size:.85rem;z-index:700;transform:translateY(80px);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);}
 .toast.show{transform:translateY(0);opacity:1;}
-
-/* ── FOOTER ── */
 footer{border-top:1px solid var(--border);padding:32px 40px;max-width:1200px;margin:0 auto;}
 .ft-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap;gap:24px;}
 .ft-brand{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
@@ -263,10 +249,10 @@ footer{border-top:1px solid var(--border);padding:32px 40px;max-width:1200px;mar
 .ft-col a{display:block;font-size:.78rem;color:var(--muted);text-decoration:none;margin-bottom:8px;cursor:pointer;transition:color .2s;}
 .ft-col a:hover{color:var(--accent);}
 .ft-bottom{border-top:1px solid var(--border);padding-top:16px;display:flex;justify-content:space-between;align-items:center;font-size:.72rem;color:var(--muted);flex-wrap:wrap;gap:8px;}
-
+/* feed tiempo real */
+#feedReal .feed-item{animation:fadeUp .3s ease both;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
-
 @media(max-width:768px){
   nav{padding:12px 16px;}
   .nav-links{display:none;}
@@ -285,10 +271,9 @@ footer{border-top:1px solid var(--border);padding:32px 40px;max-width:1200px;mar
 </head>
 <body>
 
-<!-- COOKIE -->
 <div class="cookie-overlay" id="cookieOverlay"></div>
 <div class="cookie-banner" id="cookieBanner">
-  <div class="cookie-text">Usamos cookies para mejorar tu experiencia. Debes elegir una opción para continuar. <a onclick="openLegal('cookies')">Politica de Cookies</a>.</div>
+  <div class="cookie-text">Usamos cookies para mejorar tu experiencia. Debes elegir una opcion para continuar. <a onclick="openLegal('cookies')">Politica de Cookies</a>.</div>
   <div class="cookie-buttons">
     <button class="ck-btn" onclick="acceptCookies()">Rechazar</button>
     <button class="ck-btn" onclick="openLegal('cookies')">Configurar</button>
@@ -296,7 +281,6 @@ footer{border-top:1px solid var(--border);padding:32px 40px;max-width:1200px;mar
   </div>
 </div>
 
-<!-- NAV -->
 <nav>
   <div class="logo" onclick="showPage('home')">
     <img src="https://res.cloudinary.com/dxfgrz6it/image/upload/f_auto,q_auto/SinCola.app_h8owfv" alt="SinCola" onerror="this.style.display='none'">
@@ -316,9 +300,7 @@ footer{border-top:1px solid var(--border);padding:32px 40px;max-width:1200px;mar
   </div>
 </nav>
 
-<!-- ═══ HOME PAGE ═══ -->
 <div class="page active" id="homePage">
-
   <div class="hero">
     <div class="slide s1 active"></div>
     <div class="slide s2"></div>
@@ -338,14 +320,13 @@ footer{border-top:1px solid var(--border);padding:32px 40px;max-width:1200px;mar
   </div>
 
   <div class="grid" id="estado" style="scroll-margin-top:80px;">
-
     <div class="card">
       <div class="glow g"></div>
       <div class="clabel">Entrada a Ceuta</div>
       <div class="dir-title">🇲🇦 → 🇪🇸 Marruecos a Ceuta</div>
-      <div class="srow"><div class="scircle g">😌</div><div><div class="slabel g">POCA COLA</div><div class="swait">~10 min de espera estimada</div></div></div>
+      <div class="srow"><div class="scircle g">😌</div><div><div class="slabel g" id="statusEntrada">POCA COLA</div><div class="swait" id="waitEntrada">~10 min de espera estimada</div></div></div>
       <div class="plabels"><span>Vacio</span><span>Lleno</span></div>
-      <div class="ptrack"><div class="pfill g"></div></div>
+      <div class="ptrack"><div class="pfill g" id="fillEntrada"></div></div>
       <div class="segs">
         <div class="seg"><div class="seg-icon">🚶</div><div class="seg-name">Peatonal</div><div class="seg-val g">Libre</div></div>
         <div class="seg"><div class="seg-icon">🚗</div><div class="seg-name">Coche</div><div class="seg-val g">15 min</div></div>
@@ -358,9 +339,9 @@ footer{border-top:1px solid var(--border);padding:32px 40px;max-width:1200px;mar
       <div class="glow r"></div>
       <div class="clabel">Salida de Ceuta</div>
       <div class="dir-title">🇪🇸 → 🇲🇦 Ceuta a Marruecos</div>
-      <div class="srow"><div class="scircle r">😤</div><div><div class="slabel r">MUCHA COLA</div><div class="swait">~55 min de espera estimada</div></div></div>
+      <div class="srow"><div class="scircle r">😤</div><div><div class="slabel r" id="statusSalida">MUCHA COLA</div><div class="swait" id="waitSalida">~55 min de espera estimada</div></div></div>
       <div class="plabels"><span>Vacio</span><span>Lleno</span></div>
-      <div class="ptrack"><div class="pfill r"></div></div>
+      <div class="ptrack"><div class="pfill r" id="fillSalida"></div></div>
       <div class="segs">
         <div class="seg"><div class="seg-icon">🚶</div><div class="seg-name">Peatonal</div><div class="seg-val r">+1h</div></div>
         <div class="seg"><div class="seg-icon">🚗</div><div class="seg-name">Coche</div><div class="seg-val y">40 min</div></div>
@@ -389,11 +370,10 @@ footer{border-top:1px solid var(--border);padding:32px 40px;max-width:1200px;mar
     <div class="card" id="ranking" style="scroll-margin-top:80px;">
       <div class="glow y"></div>
       <div class="clabel">Top colaboradores · Esta semana</div>
-      <div class="rank-list">
+      <div class="rank-list" id="rankingList">
         <div class="rank-row"><div class="rn gold">1</div><div class="rav" style="background:rgba(245,158,11,.15)">👑</div><div class="rname">Youssef_Ceuta</div><span>🏅</span><div class="rpts">1,240 pts</div></div>
         <div class="rank-row"><div class="rn silver">2</div><div class="rav" style="background:rgba(148,163,184,.1)">🦁</div><div class="rname">Fatima_93</div><span>⭐</span><div class="rpts">980 pts</div></div>
         <div class="rank-row"><div class="rn bronze">3</div><div class="rav" style="background:rgba(180,83,9,.1)">🎯</div><div class="rname">Hassan_Tarajal</div><span>🔥</span><div class="rpts">755 pts</div></div>
-        <div class="rank-row"><div class="rn">4</div><div class="rav" style="background:rgba(255,255,255,.04)">🌟</div><div class="rname">Aicha_2024</div><span></span><div class="rpts">610 pts</div></div>
       </div>
     </div>
 
@@ -422,16 +402,13 @@ footer{border-top:1px solid var(--border);padding:32px 40px;max-width:1200px;mar
       </div>
     </div>
 
+    <!-- FEED REAL DE FIREBASE -->
     <div class="card full">
       <div class="clabel">Reportes recientes de la comunidad</div>
-      <div class="feed-list">
-        <div class="feed-item"><div class="fav">👤</div><div class="fbody"><div class="fuser">Youssef_Ceuta</div><div class="fmsg">Cola muy larga en peatonal salida.<span class="ftag r">Mucha cola</span></div><div class="ftime">Hace 3 min · Salida · Peatonal · 1h 10min</div></div><div class="fpts">+10 pts</div></div>
-        <div class="feed-item"><div class="fav">🦁</div><div class="fbody"><div class="fuser">Fatima_93</div><div class="fmsg">Entrada en coche bastante fluida.<span class="ftag g">Poca cola</span></div><div class="ftime">Hace 8 min · Entrada · Coche · 15min</div></div><div class="fpts">+10 pts</div></div>
-        <div class="feed-item"><div class="fav">🎯</div><div class="fbody"><div class="fuser">Hassan_Tarajal</div><div class="fmsg">Motos pasando sin problema.<span class="ftag y">Cola media</span></div><div class="ftime">Hace 15 min · Salida · Moto · 25min</div></div><div class="fpts">+10 pts</div></div>
-        <div class="feed-item"><div class="fav">🌟</div><div class="fbody"><div class="fuser">Aicha_2024</div><div class="fmsg">Peatonal entrada libre, 5 min.<span class="ftag g">Poca cola</span></div><div class="ftime">Hace 22 min · Entrada · Peatonal · 5min</div></div><div class="fpts">+10 pts</div></div>
+      <div class="feed-list" id="feedReal">
+        <div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem;">Cargando reportes...</div>
       </div>
     </div>
-
   </div>
 
   <section id="como-funciona" style="max-width:1200px;margin:0 auto;padding:0 40px 60px;scroll-margin-top:80px;">
@@ -445,10 +422,8 @@ footer{border-top:1px solid var(--border);padding:32px 40px;max-width:1200px;mar
       </div>
     </div>
   </section>
+</div>
 
-</div><!-- /home -->
-
-<!-- ═══ CONTACT PAGE ═══ -->
 <div class="page" id="contactPage">
   <div class="contact-wrap">
     <h2>Ponte en <span>Contacto</span></h2>
@@ -471,9 +446,8 @@ footer{border-top:1px solid var(--border);padding:32px 40px;max-width:1200px;mar
       <div class="cinfobox"><div class="ico">📍</div><div><div class="lbl">Ubicacion</div><div class="val">Ceuta, Espana</div></div></div>
     </div>
   </div>
-</div><!-- /contact -->
+</div>
 
-<!-- FOOTER -->
 <footer>
   <div class="ft-top">
     <div>
@@ -518,87 +492,49 @@ footer{border-top:1px solid var(--border);padding:32px 40px;max-width:1200px;mar
   </div>
 </footer>
 
-<!-- ═══ LOGIN MODAL ═══ -->
+<!-- LOGIN MODAL -->
 <div class="overlay" id="loginModal">
   <div class="modal">
     <button class="closex" onclick="closeLogin()">✕</button>
     <div class="mtitle">Acceder a SinCola</div>
     <div class="msub">Con cuenta acumulas puntos y apareces en el ranking</div>
-    <button class="social-btn sbg" onclick="doSocialLogin('Google')">
+    <button class="social-btn sbg" onclick="loginGoogle()">
       <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0S6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       Continuar con Google
     </button>
-    <button class="social-btn sbf" onclick="doSocialLogin('Facebook')">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
-      Continuar con Facebook
-    </button>
-    <div style="font-size:.68rem;color:var(--muted);margin-bottom:4px;line-height:1.5;">Al continuar, Google o Facebook pueden tratar tus datos segun sus politicas.</div>
-    <div class="divider"><div class="div-line"></div><span class="div-txt">o con email</span><div class="div-line"></div></div>
-    <div class="ltabs">
-      <button class="ltab on" id="tabL" onclick="switchTab('login')">Iniciar sesion</button>
-      <button class="ltab" id="tabR" onclick="switchTab('register')">Crear cuenta</button>
-    </div>
-    <div id="loginForm">
-      <div class="mlbl">Usuario o email</div>
-      <input class="linput" id="loginUser" type="text" placeholder="tu_nombre o correo@email.com">
-      <div class="mlbl">Contrasena</div>
-      <input class="linput" id="loginPass" type="password" placeholder="••••••••">
-      <button class="lbtn" onclick="doLogin()">Entrar</button>
-      <button class="anon-btn" onclick="doAnon()">Continuar sin cuenta (anonimo)</button>
-    </div>
-    <div id="registerForm" style="display:none">
-      <div class="mlbl">Nombre de usuario</div>
-      <input class="linput" id="regUser" type="text" placeholder="Ej: Youssef_Ceuta" maxlength="30">
-      <div class="mlbl">Email</div>
-      <input class="linput" id="regEmail" type="email" placeholder="correo@email.com">
-      <div class="mlbl">Contrasena</div>
-      <input class="linput" id="regPass" type="password" placeholder="Minimo 8 caracteres">
-      <div class="check-row">
-        <input type="checkbox" id="checkTerms">
-        <label for="checkTerms">Acepto la <a onclick="openLegal('privacidad')">Politica de Privacidad</a> y los <a onclick="openLegal('terminos')">Terminos de Uso</a> <span style="color:var(--red)">*</span></label>
-      </div>
-      <div class="check-row">
-        <input type="checkbox" id="checkPromo">
-        <label for="checkPromo">Quiero recibir novedades de SinCola por email (opcional)</label>
-      </div>
-      <button class="lbtn" onclick="doRegister()">Crear cuenta</button>
-      <button class="anon-btn" onclick="doAnon()">Continuar sin cuenta (anonimo)</button>
-    </div>
+    <div style="font-size:.68rem;color:var(--muted);margin-bottom:4px;line-height:1.5;">Al continuar, Google puede tratar tus datos segun sus politicas.</div>
+    <div class="divider"><div class="div-line"></div><span class="div-txt">o anonimo</span><div class="div-line"></div></div>
+    <button class="anon-btn" onclick="doAnon()">👻 Continuar sin cuenta (anonimo)</button>
   </div>
 </div>
 
-<!-- ═══ REPORT MODAL ═══ -->
+<!-- REPORT MODAL -->
 <div class="overlay" id="reportModal">
   <div class="modal">
     <button class="closex" onclick="closeReport()">✕</button>
     <div class="mtitle">Reportar estado</div>
     <div class="msub">Tu reporte ayuda a la comunidad y te da <strong style="color:var(--accent)">+10 puntos</strong></div>
-
     <div class="rep-banner">
       <span class="name" id="repName">👤 Anonimo</span>
       <span class="enter-link" onclick="closeReport();openLogin()">Entrar para ganar puntos →</span>
     </div>
-
     <div class="mlbl">Direccion?</div>
     <div style="display:flex;gap:8px;margin-bottom:20px;">
       <button class="sel-btn on" onclick="selBtn(this,'d')">🇲🇦→🇪🇸 Entrando</button>
       <button class="sel-btn" onclick="selBtn(this,'d')">🇪🇸→🇲🇦 Saliendo</button>
     </div>
-
     <div class="mlbl">Tipo de paso?</div>
     <div style="display:flex;gap:8px;margin-bottom:20px;">
       <button class="sel-btn on" onclick="selBtn(this,'t')">🚶 Peatonal</button>
       <button class="sel-btn" onclick="selBtn(this,'t')">🚗 Coche</button>
       <button class="sel-btn" onclick="selBtn(this,'t')">🏍️ Moto</button>
     </div>
-
     <div class="mlbl">Como esta la cola?</div>
     <div style="display:flex;gap:8px;margin-bottom:20px;">
       <button class="sel-btn sg" onclick="selBtn(this,'l')">😌 Poca</button>
       <button class="sel-btn sy on" onclick="selBtn(this,'l')">😐 Media</button>
       <button class="sel-btn sr" onclick="selBtn(this,'l')">😤 Mucha</button>
     </div>
-
     <div class="mlbl">Donde esta la cola?</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;">
       <button class="sel-btn" onclick="selBtn(this,'p')" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 8px;"><span style="font-size:1.2rem">🇲🇦</span><span style="font-size:.78rem;font-weight:600">Policia marroqui</span><span style="font-size:.65rem;color:var(--muted)">Cola larga</span></button>
@@ -606,7 +542,6 @@ footer{border-top:1px solid var(--border);padding:32px 40px;max-width:1200px;mar
       <button class="sel-btn" onclick="selBtn(this,'p')" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 8px;"><span style="font-size:1.2rem">🇲🇦🇪🇸</span><span style="font-size:.78rem;font-weight:600">Las dos</span><span style="font-size:.65rem;color:var(--muted)">Ambos lados</span></button>
       <button class="sel-btn" onclick="selBtn(this,'p')" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 8px;"><span style="font-size:1.2rem">✅</span><span style="font-size:.78rem;font-weight:600">Ninguna</span><span style="font-size:.65rem;color:var(--muted)">Todo fluido</span></button>
     </div>
-
     <div class="mlbl">Cuanto tiempo llevas esperando? <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">(opcional)</span></div>
     <div style="display:flex;gap:10px;margin-bottom:24px;align-items:center;">
       <div style="flex:1;position:relative;">
@@ -619,12 +554,11 @@ footer{border-top:1px solid var(--border);padding:32px 40px;max-width:1200px;mar
         <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.75rem;pointer-events:none;">min</span>
       </div>
     </div>
-
     <button class="submit-btn" onclick="submitReport()">Enviar reporte · +10 pts 🎯</button>
   </div>
 </div>
 
-<!-- ═══ LEGAL MODAL ═══ -->
+<!-- LEGAL MODAL -->
 <div class="overlay" id="legalModal">
   <div class="modal wide">
     <button class="closex" onclick="closeLegal()">✕</button>
@@ -679,8 +613,8 @@ function goSlide(n){
 setInterval(()=>goSlide((cs+1)%slides.length), 4500);
 
 // ── TIMER ──
-let min=3;
-setInterval(()=>{ min++; document.getElementById('lastUpdate').textContent='Actualizado hace '+min+' min'; }, 60000);
+let minAgo=3;
+setInterval(()=>{ minAgo++; document.getElementById('lastUpdate').textContent='Actualizado hace '+minAgo+' min'; }, 60000);
 
 // ── CHARTS ──
 const hrs=[
@@ -740,32 +674,137 @@ setTimeout(()=>{
   });
 },300);
 
+// ══════════════════════════════════════
+// FIREBASE AUTH REAL
+// ══════════════════════════════════════
+let currentUser = null;
+
+// Login con Google (POPUP - funciona en GitHub Pages)
+function loginGoogle(){
+  auth.signInWithPopup(googleProvider)
+    .then((result)=>{
+      closeLogin();
+      toast('Bienvenido ' + result.user.displayName + '! 🎉', 'Ya puedes ganar puntos');
+    })
+    .catch((error)=>{
+      console.error('Error login Google:', error.code, error.message);
+      toast('Error al iniciar sesion', error.message);
+    });
+}
+
+// Escuchar cambios de sesion en tiempo real
+auth.onAuthStateChanged((user)=>{
+  currentUser = user;
+  const nb = document.getElementById('loginNavBtn');
+  if(user){
+    nb.textContent = user.displayName || user.email;
+    nb.style.background = 'rgba(34,197,94,.15)';
+    nb.style.borderColor = '#22c55e';
+    nb.style.outlineColor = 'rgba(34,197,94,.35)';
+    updateRepBanner();
+  } else {
+    nb.textContent = 'Iniciar sesion · Registrar';
+    nb.style.background = 'rgba(249,115,22,.15)';
+    nb.style.borderColor = '#f97316';
+    nb.style.outlineColor = 'rgba(249,115,22,.35)';
+    updateRepBanner();
+  }
+});
+
+function logoutUser(){
+  auth.signOut().then(()=>{
+    toast('Sesion cerrada', 'Hasta pronto!');
+  });
+}
+
+// ══════════════════════════════════════
+// FIRESTORE - REPORTES REALES
+// ══════════════════════════════════════
+
+// Escuchar reportes en tiempo real
+db.collection('reportes')
+  .orderBy('timestamp', 'desc')
+  .limit(10)
+  .onSnapshot((snapshot)=>{
+    const feed = document.getElementById('feedReal');
+    if(snapshot.empty){
+      feed.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem;">Aun no hay reportes. Se el primero!</div>';
+      return;
+    }
+    feed.innerHTML = '';
+    snapshot.forEach((doc)=>{
+      const d = doc.data();
+      const hace = tiempoDesde(d.timestamp);
+      const tagClass = d.nivel === 'Poca' ? 'g' : d.nivel === 'Media' ? 'y' : 'r';
+      const emoji = d.nivel === 'Poca' ? '😌' : d.nivel === 'Media' ? '😐' : '😤';
+      feed.innerHTML += `
+        <div class="feed-item">
+          <div class="fav">${emoji}</div>
+          <div class="fbody">
+            <div class="fuser">${d.usuario || 'Anonimo'}</div>
+            <div class="fmsg">${d.direccion} · ${d.tipo}<span class="ftag ${tagClass}">${d.nivel} cola</span></div>
+            <div class="ftime">${hace} · ${d.policia || ''} ${d.horas ? '· '+d.horas+'h '+d.minutos+'min espera' : ''}</div>
+          </div>
+          <div class="fpts">${d.puntos ? '+'+d.puntos+' pts' : ''}</div>
+        </div>`;
+    });
+    minAgo = 0;
+    document.getElementById('lastUpdate').textContent = 'Actualizado ahora mismo';
+  }, (error)=>{
+    console.error('Error cargando reportes:', error);
+  });
+
+function tiempoDesde(timestamp){
+  if(!timestamp) return 'Ahora';
+  const ahora = new Date();
+  const fecha = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+  const diff = Math.floor((ahora - fecha) / 60000);
+  if(diff < 1) return 'Ahora mismo';
+  if(diff < 60) return 'Hace '+diff+' min';
+  return 'Hace '+Math.floor(diff/60)+'h';
+}
+
+// Guardar reporte en Firestore
+async function guardarReporte(datos){
+  try{
+    await db.collection('reportes').add({
+      ...datos,
+      usuario: currentUser ? (currentUser.displayName || currentUser.email) : 'Anonimo',
+      userId: currentUser ? currentUser.uid : null,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      puntos: currentUser ? 10 : 0
+    });
+    // Si hay usuario, sumarle puntos
+    if(currentUser){
+      const userRef = db.collection('usuarios').doc(currentUser.uid);
+      await userRef.set({
+        nombre: currentUser.displayName,
+        email: currentUser.email,
+        puntos: firebase.firestore.FieldValue.increment(10)
+      }, {merge: true});
+    }
+  } catch(e){
+    console.error('Error guardando reporte:', e);
+  }
+}
+
 // ── USER ──
 const adj=['Rapido','Viajero','Curioso','Tranquilo','Veloz','Libre'];
 const nou=['Tarajal','Ceuta','Frontera','Paso','Camino'];
 function rndName(){ return adj[Math.floor(Math.random()*adj.length)]+'_'+nou[Math.floor(Math.random()*nou.length)]+'_'+Math.floor(Math.random()*900+100); }
-let user={name:null,logged:false};
+let anonUser = null;
 
-function updateNavUser(){
-  const nb=document.getElementById('loginNavBtn');
-  if(user.logged){
-    nb.textContent=user.name;
-    nb.style.background='rgba(34,197,94,.15)';
-    nb.style.borderColor='#22c55e';
-    nb.style.outlineColor='rgba(34,197,94,.35)';
-  }
-}
 function updateRepBanner(){
-  const el=document.getElementById('repName');
-  const link=document.querySelector('.rep-banner .enter-link');
-  if(user.logged){
-    el.textContent='✅ '+user.name;
-    el.className='name logged';
-    link.style.display='none';
+  const el = document.getElementById('repName');
+  const link = document.querySelector('.rep-banner .enter-link');
+  if(currentUser){
+    el.textContent = '✅ ' + (currentUser.displayName || currentUser.email);
+    el.className = 'name logged';
+    if(link) link.style.display = 'none';
   } else {
-    el.textContent='👤 Anonimo';
-    el.className='name';
-    link.style.display='inline';
+    el.textContent = '👤 Anonimo';
+    el.className = 'name';
+    if(link) link.style.display = 'inline';
   }
 }
 
@@ -774,20 +813,11 @@ function openLogin(){ document.getElementById('loginModal').classList.add('on');
 function closeLogin(){ document.getElementById('loginModal').classList.remove('on'); }
 document.getElementById('loginModal').addEventListener('click',e=>{ if(e.target===document.getElementById('loginModal')) closeLogin(); });
 
-function switchTab(t){
-  document.getElementById('loginForm').style.display=t==='login'?'block':'none';
-  document.getElementById('registerForm').style.display=t==='register'?'block':'none';
-  document.getElementById('tabL').classList.toggle('on',t==='login');
-  document.getElementById('tabR').classList.toggle('on',t==='register');
+function doAnon(){
+  anonUser = rndName();
+  closeLogin();
+  openReport();
 }
-function doSocialLogin(p){ user={name:p+'_'+Math.floor(Math.random()*900+100),logged:true}; closeLogin(); updateNavUser(); }
-function doLogin(){ const u=document.getElementById('loginUser').value.trim()||rndName(); user={name:u,logged:true}; closeLogin(); updateNavUser(); }
-function doRegister(){
-  if(!document.getElementById('checkTerms').checked){ toast('Faltan datos','Acepta los terminos para registrarte'); return; }
-  const u=document.getElementById('regUser').value.trim()||rndName();
-  user={name:u,logged:true}; closeLogin(); updateNavUser();
-}
-function doAnon(){ user={name:rndName(),logged:false}; closeLogin(); openReport(); }
 
 // ── REPORT MODAL ──
 function openReport(){ document.getElementById('reportModal').classList.add('on'); updateRepBanner(); }
@@ -799,14 +829,29 @@ function closeReport(){
 document.getElementById('reportModal').addEventListener('click',e=>{ if(e.target===document.getElementById('reportModal')) closeReport(); });
 
 function selBtn(btn,g){ btn.parentElement.querySelectorAll('.sel-btn').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); }
-function submitReport(){ closeReport(); toast('Reporte enviado! 🎉', user.logged?'Has ganado +10 puntos':'Reportado como anonimo'); }
+
+function submitReport(){
+  const dir = document.querySelector('#reportModal [onclick*="\'d\'"].on')?.textContent || 'No indicado';
+  const tipo = document.querySelector('#reportModal [onclick*="\'t\'"].on')?.textContent || 'No indicado';
+  const nivel = document.querySelector('#reportModal [onclick*="\'l\'"].on')?.textContent || 'Media';
+  const policia = document.querySelector('#reportModal [onclick*="\'p\'"].on span:nth-child(2)')?.textContent || '';
+  const horas = document.getElementById('hInput').value || '0';
+  const minutos = document.getElementById('mInput').value || '0';
+
+  const nivelTexto = nivel.includes('Poca') ? 'Poca' : nivel.includes('Mucha') ? 'Mucha' : 'Media';
+
+  guardarReporte({ direccion: dir.trim(), tipo: tipo.trim(), nivel: nivelTexto, policia, horas, minutos });
+
+  closeReport();
+  toast('Reporte enviado! 🎉', currentUser ? 'Has ganado +10 puntos' : 'Reportado como anonimo');
+}
 
 // ── LEGAL ──
 function openLegal(t){
   const c={
     aviso:'<div class="mtitle">Aviso Legal</div><div style="font-size:.82rem;color:var(--muted);line-height:1.8;margin-top:12px;"><p style="margin-bottom:12px;"><strong style="color:var(--text)">Titular:</strong><br>SinCola · Maruan<br>Direccion: Ceuta, Espana<br>Email: sincola.frontera@gmail.com</p><p style="margin-bottom:12px;"><strong style="color:var(--text)">Objeto:</strong><br>SinCola es una plataforma informativa comunitaria que muestra reportes voluntarios sobre colas en el Tarajal.</p><p style="margin-bottom:12px;"><strong style="color:var(--text)">Responsabilidad:</strong><br>SinCola no se responsabiliza de decisiones tomadas en base a la informacion publicada. Queda prohibido el uso de bots.</p><p><strong style="color:var(--text)">Legislacion:</strong><br>Este sitio se rige por la legislacion espanola vigente.</p></div>',
     privacidad:'<div class="mtitle">Politica de Privacidad</div><div style="font-size:.82rem;color:var(--muted);line-height:1.8;margin-top:12px;"><p style="margin-bottom:12px;"><strong style="color:var(--text)">Responsable:</strong><br>Maruan · sincola.frontera@gmail.com</p><p style="margin-bottom:12px;"><strong style="color:var(--text)">Datos que recogemos:</strong><br>Email y nombre al registrarte, login social, reportes enviados, IP anonimizada, cookies.</p><p style="margin-bottom:12px;"><strong style="color:var(--text)">Finalidad:</strong><br>Gestionar cuenta y publicar reportes. No vendemos datos.</p><p style="margin-bottom:12px;"><strong style="color:var(--text)">Base legal:</strong><br>Consentimiento (Art. 6.1.a RGPD).</p><p><strong style="color:var(--text)">Derechos:</strong><br>Acceso, rectificacion, supresion. Email: sincola.frontera@gmail.com</p></div>',
-    cookies:'<div class="mtitle">Configurar Cookies</div><div style="font-size:.82rem;color:var(--muted);line-height:1.8;margin-top:12px;"><p style="margin-bottom:12px;"><strong style="color:var(--text)">Cookies que usamos:</strong><br>Esenciales: sesion y preferencias<br>Google Analytics: estadisticas anonimas<br>Google AdSense: publicidad<br>Google/Facebook Login: autenticacion</p><p style="margin-bottom:16px;"><strong style="color:var(--text)">Contacto:</strong> sincola.frontera@gmail.com</p><div style="display:flex;gap:8px;"><button onclick="acceptCookies();closeLegal();" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:DM Sans,sans-serif;font-size:.85rem;cursor:pointer;">Solo esenciales</button><button onclick="acceptCookies();closeLegal();" style="flex:1;padding:12px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-family:DM Sans,sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;">Aceptar todo</button></div></div>',
+    cookies:'<div class="mtitle">Configurar Cookies</div><div style="font-size:.82rem;color:var(--muted);line-height:1.8;margin-top:12px;"><p style="margin-bottom:12px;"><strong style="color:var(--text)">Cookies que usamos:</strong><br>Esenciales: sesion y preferencias<br>Google Analytics: estadisticas anonimas<br>Google AdSense: publicidad<br>Google Login: autenticacion</p><p style="margin-bottom:16px;"><strong style="color:var(--text)">Contacto:</strong> sincola.frontera@gmail.com</p><div style="display:flex;gap:8px;"><button onclick="acceptCookies();closeLegal();" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:DM Sans,sans-serif;font-size:.85rem;cursor:pointer;">Solo esenciales</button><button onclick="acceptCookies();closeLegal();" style="flex:1;padding:12px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-family:DM Sans,sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;">Aceptar todo</button></div></div>',
     terminos:'<div class="mtitle">Terminos de Uso</div><div style="font-size:.82rem;color:var(--muted);line-height:1.8;margin-top:12px;"><p style="margin-bottom:12px;"><strong style="color:var(--text)">Uso:</strong><br>Servicio gratuito. Al usarlo aceptas estas condiciones.</p><p style="margin-bottom:12px;"><strong style="color:var(--text)">Reportes:</strong><br>Deben ser veridicos. Prohibido: informacion falsa, spam, bots.</p><p style="margin-bottom:12px;"><strong style="color:var(--text)">Moderacion:</strong><br>Podemos eliminar reportes y suspender cuentas sin previo aviso.</p><p><strong style="color:var(--text)">Responsabilidad:</strong><br>No garantizamos exactitud. Los reportes se ceden a SinCola para su publicacion.</p></div>'
   };
   document.getElementById('legalContent').innerHTML=c[t]||'';
@@ -825,7 +870,7 @@ async function sendContact(){
   const btn=document.getElementById('cBtn');
   if(!nombre||!email||!msg){ status.className='fstatus err'; status.textContent='Rellena todos los campos obligatorios.'; return; }
   btn.textContent='Enviando...'; btn.disabled=true;
-  const FORMSPREE='https://formspree.io/f/XXXXXXXX'; // Sustituye con tu ID
+  const FORMSPREE='https://formspree.io/f/XXXXXXXX'; // ← CAMBIA ESTO por tu ID de Formspree
   try{
     const res=await fetch(FORMSPREE,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({nombre,email,asunto,message:msg})});
     if(res.ok){
@@ -848,41 +893,6 @@ function toast(title,sub){
   t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),3500);
 }
-</script>
-  <button onclick="loginGoogle()">
-  Login con Google
-</button>
-
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyBfpxXRX-8EGUypXWZALCZI6ntvloe849A",
-  authDomain: "sincola-3cf36.firebaseapp.com",
-  projectId: "sincola-3cf36",
-  storageBucket: "sincola-3cf36.appspot.com",
-  messagingSenderId: "1058044123494",
-  appId: "1:1058044123494:web:f5c45982cd174f422790a7",
-  measurementId: "G-6L0PZ8T89Z"
-};
-
-firebase.initializeApp(firebaseConfig);
-
-const provider = new firebase.auth.GoogleAuthProvider();
-
-function loginGoogle() {
-  firebase.auth().signInWithRedirect(provider);
-}
-
-firebase.auth().onAuthStateChanged((user) => {
-  if (user) {
-    alert("Bienvenido " + user.displayName);
-    console.log(user);
-  }
-});
-</script>
-  
 </script>
 </body>
 </html>
