@@ -873,7 +873,7 @@ function toast(title,sub){
   // FUNCIÓN LOGIN
   function login() {
     firebase.auth().signInWithRedirect(provider);
-      .then((result) => {
+       .then((result) => {
         console.log("Usuario:", result.user);
         alert("Bienvenido " + result.user.displayName);
       })
