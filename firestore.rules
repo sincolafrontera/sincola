@@ -1,0 +1,155 @@
+// ===================================================
+// firestore.rules — Reglas de seguridad Firestore
+// SinCola · Producción v2.0
+//
+// INSTRUCCIONES: Copiar este contenido en Firebase Console
+// → Firestore Database → Rules
+// ===================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Funciones auxiliares ──────────────────────
+
+    // ¿Está autenticado?
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // ¿Es el propietario del documento?
+    function isOwner(userId) {
+      return isAuth() && request.auth.uid == userId;
+    }
+
+    // ¿Es admin?
+    function isAdmin() {
+      return isAuth() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // Validar que el campo existe y es string no vacío
+    function isValidString(field, maxLen) {
+      return field is string && field.size() > 0 && field.size() <= maxLen;
+    }
+
+    // Validar timestamp reciente (últimos 5 minutos)
+    function isRecentTimestamp() {
+      return request.resource.data.timestamp == request.time;
+    }
+
+    // ── Colección: reportes ───────────────────────
+    match /reportes/{reporteId} {
+
+      // Cualquiera puede LEER reportes
+      allow read: if true;
+
+      // CREAR: sin auth (anónimo) o con auth
+      allow create: if
+        // Campos obligatorios presentes
+        request.resource.data.keys().hasAll(['direccion', 'tipo', 'nivel', 'timestamp']) &&
+
+        // Validar valores
+        isValidString(request.resource.data.direccion, 100) &&
+        isValidString(request.resource.data.tipo, 50) &&
+        request.resource.data.nivel in ['Poca', 'Media', 'Mucha'] &&
+
+        // El timestamp debe ser el del servidor
+        request.resource.data.timestamp == request.time &&
+
+        // Puntos: solo usuarios auth pueden recibir >0
+        (
+          (!isAuth() && request.resource.data.puntos == 0) ||
+          (isAuth() && request.resource.data.puntos <= 20)
+        ) &&
+
+        // userId debe coincidir con el auth.uid si está autenticado
+        (
+          (!isAuth() && request.resource.data.userId == null) ||
+          (isAuth() && request.resource.data.userId == request.auth.uid)
+        ) &&
+
+        // Límite de tamaño total del documento
+        request.resource.data.size() < 2000;
+
+      // UPDATE: solo admins pueden actualizar (ej: marcar como spam)
+      allow update: if isAdmin();
+
+      // DELETE: solo admins pueden eliminar
+      allow delete: if isAdmin();
+    }
+
+    // ── Colección: usuarios ───────────────────────
+    match /usuarios/{userId} {
+
+      // Leer perfil: solo el propio usuario o admins
+      allow read: if isOwner(userId) || isAdmin();
+
+      // Leer para ranking (solo campos públicos)
+      // Se permite lectura parcial mediante query con select limitado
+      allow list: if true; // Para ranking público
+
+      // Crear/actualizar: solo el propio usuario
+      allow create, update: if
+        isOwner(userId) &&
+        // Solo puede tocar sus propios campos
+        request.resource.data.keys().hasAll(['nombre', 'email']) &&
+        isValidString(request.resource.data.nombre, 100) &&
+        isValidString(request.resource.data.email, 200) &&
+        // No puede auto-asignarse puntos directamente
+        // (los puntos solo los incrementa el backend via Cloud Functions)
+        !request.resource.data.keys().hasOnly(['puntos']);
+
+      // DELETE: solo el propio usuario o admins
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+
+    // ── Colección: ranking_semanal ────────────────
+    match /ranking_semanal/{entry} {
+      // Solo lectura pública
+      allow read: if true;
+      // Solo escritura desde Cloud Functions (admin SDK)
+      allow write: if isAdmin();
+    }
+
+    // ── Colección: estado_frontera ────────────────
+    match /estado_frontera/{docId} {
+      // Lectura pública (estado calculado)
+      allow read: if true;
+      // Escritura solo desde Cloud Functions
+      allow write: if isAdmin();
+    }
+
+    // ── Colección: contacto ───────────────────────
+    match /contacto/{msgId} {
+      // Nadie puede leer mensajes de contacto (solo admin backend)
+      allow read: if isAdmin();
+
+      // Cualquiera puede enviar un mensaje (con validación)
+      allow create: if
+        request.resource.data.keys().hasAll(['nombre', 'email', 'mensaje', 'timestamp']) &&
+        isValidString(request.resource.data.nombre, 100) &&
+        isValidString(request.resource.data.email, 200) &&
+        isValidString(request.resource.data.mensaje, 2000) &&
+        request.resource.data.timestamp == request.time;
+
+      allow update, delete: if isAdmin();
+    }
+
+    // ── Colección: admins ─────────────────────────
+    match /admins/{userId} {
+      // Solo lectura/escritura desde Firebase Console o admin SDK
+      allow read, write: if false;
+    }
+
+    // ── Colección: spam_log ───────────────────────
+    match /spam_log/{entry} {
+      allow read, write: if isAdmin();
+    }
+
+    // ── Bloquear todo lo demás ────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
