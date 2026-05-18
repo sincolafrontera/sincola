@@ -1,7 +1,0 @@
-User-agent: *
-Allow: /
-
-# Bloquear panel de admin
-Disallow: /admin/
-
-Sitemap: https://sincolafrontera.github.io/sincola/sitemap.xml
